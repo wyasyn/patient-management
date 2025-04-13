@@ -34,7 +34,13 @@ I've created a comprehensive patient management system with the following featur
 1. **API Endpoints**
 
 1. Created RESTful API routes for appointments, recommendations, and patient management
-1. Implemented proper error
+1. Implemented proper error handling
+
+## .env
+
+```env
+JWT_SECRET=""
+```
 
 ## Installation
 
