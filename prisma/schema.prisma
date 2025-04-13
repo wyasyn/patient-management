@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      Role     @default(PATIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  doctor    Doctor?
+  patient   Patient?
+}
+
+model Doctor {
+  id              String           @id @default(cuid())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String           @unique
+  specialty       String
+  appointments    Appointment[]
+  patients        PatientDoctor[]
+  recommendations Recommendation[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Patient {
+  id              String           @id @default(cuid())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String           @unique
+  dateOfBirth     DateTime
+  doctors         PatientDoctor[]
+  appointments    Appointment[]
+  recommendations Recommendation[]
+  medicalHistory  MedicalHistory?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model PatientDoctor {
+  id        String   @id @default(cuid())
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId  String
+  createdAt DateTime @default(now())
+
+  @@unique([patientId, doctorId])
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId String
+  doctor    Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId  String
+  startTime DateTime
+  endTime   DateTime
+  type      String
+  status    AppointmentStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model Recommendation {
+  id          String               @id @default(cuid())
+  patient     Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId   String
+  doctor      Doctor               @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId    String
+  type        String
+  description String
+  status      RecommendationStatus @default(ACTIVE)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model MedicalHistory {
+  id            String   @id @default(cuid())
+  patient       Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId     String   @unique
+  allergies     String?
+  conditions    String?
+  medications   String?
+  surgeries     String?
+  familyHistory String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Role {
+  DOCTOR
+  PATIENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum RecommendationStatus {
+  ACTIVE
+  PENDING
+  COMPLETED
+}
